@@ -1,0 +1,11 @@
+{
+	"authors": [ "" ],
+	"version": "0.1.0",
+	"output": "build",
+	"sources": [ "src/*", "test/*" ],
+	"targets": {
+		"test": {
+			"type": "executable"
+		}
+	}
+}
