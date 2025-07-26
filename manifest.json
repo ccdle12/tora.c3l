@@ -1,5 +1,5 @@
 {
-  "provides" : "yule",
+  "provides" : "tora",
   // "sources" : [ "src/**" ],
   "targets" : {
     "android-aarch64" : {

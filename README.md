@@ -1,1 +1,1 @@
-Welcome to the yule library.
+Welcome to the tora logging library.
