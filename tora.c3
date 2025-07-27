@@ -11,36 +11,28 @@ enum LogLevel : int {
     ERROR,
 }
 
-fn void? log_trace(String *msg)
-{
-    return log(LogLevel.TRACE, msg)!;
-}
-
-fn void? log_debug(String *msg)
-{
-    return log(LogLevel.DEBUG, msg)!;
-}
-
 fn void? log_info(String *msg)
 {
-    return log(LogLevel.INFO, msg)!;
+    return log(null, 0, LogLevel.INFO, msg)!;
 }
 
-fn void? log_warn(String *msg)
+fn void? b_log_info(char* buffer, int buf_size, String *msg)
 {
-    return log(LogLevel.WARN, msg)!;
+    return log(buffer, buf_size, LogLevel.INFO, msg)!;
 }
 
-fn void? log_error(String *msg)
-{
-    return log(LogLevel.ERROR, msg)!;
-}
-
-fn void? log(LogLevel lvl, String *msg)
+fn void? log(char* buf, int buf_size, LogLevel lvl, String *msg)
 {
     if (!msg) {
         return NULL_POINTER?;
     }
 
-    io::printn(*msg);
+    String lvl_fmt = "[foo] ";
+    String output = String.tconcat(lvl_fmt, *msg);
+
+    if (buf) {
+        io::bprintf(buf[:buf_size], output);
+    } else {
+        io::printn(output);
+    }
 }
