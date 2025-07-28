@@ -31,11 +31,7 @@ fn void test_log_output() @test
     tora::b_log_info(&buf[0], $sizeof(buf), &&"foo")!!;
 
     String result = (String) &buf;
-    String expected = "[foo] foo";
+    String expected = "[INFO] foo";
 
-    io::printfn("RESULT LEN: %d", result.len);
-    io::printfn("EXPECTED LEN: %d", expected.len);
-
-    test::eq(result, "[foo] foo");
-    test::eq(1, 0);
+    test::eq(result[:expected.len], expected);
 }
