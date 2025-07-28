@@ -11,6 +11,17 @@ enum LogLevel : int {
     ERROR,
 }
 
+fn String get_log_string(LogLevel lvl) @private
+{
+    switch (lvl)
+    {
+        case INFO:
+            return "[INFO] ";
+        default:
+            return "";
+    }
+}
+
 fn void? log_info(String *msg)
 {
     return log(null, 0, LogLevel.INFO, msg)!;
@@ -27,7 +38,7 @@ fn void? log(char* buf, int buf_size, LogLevel lvl, String *msg)
         return NULL_POINTER?;
     }
 
-    String lvl_fmt = "[foo] ";
+    String lvl_fmt = get_log_string(lvl);
     String output = String.tconcat(lvl_fmt, *msg);
 
     if (buf) {
