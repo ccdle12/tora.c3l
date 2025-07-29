@@ -1,39 +1,40 @@
-import tora;
+module tora::log;
+
 import std::io;
 import std::time;
 import std::core::dstring;
 
 fn void test_str_null() @test
 {
-    fault err = @catch(tora::log(null, LogLevel.TRACE, null));
+    fault err = @catch(log::log(null, null, &&LogLevel.TRACE, null));
     assert(err, "Passing null pointer for string is an error");
 }
 
 fn void test_positive_case() @test
 {
-    fault err = @catch(tora::log(null, LogLevel.TRACE, &&"foo"));
+    fault err = @catch(log::log(null, null, &&LogLevel.TRACE, &&"foo"));
     assert(!err, "Passing a string should not result in an error");
 }
 
-fn void test_info_case() @test
+fn void test_info() @test
 {
-    fault err = @catch(tora::log_info(&&"foo"));
+    fault err = @catch(log::info(&&"foo"));
     assert(!err, "Calling log functions for specific level should not result in an error");
 }
 
 fn void test_rethrowing() @test
 {
-    fault err = @catch(tora::log_info(null));
+    fault err = @catch(log::info(null));
     assert(err, "Should rethrow the specific log functions");
 }
 
-fn void test_log_output() @test
+fn void test_log_config() @test
 {
-    DString result = dstring::temp();
-    tora::b_log_info(&result, &&"foo")!!;
+    LogConfig conf = { .date = false };
+    DString buf = dstring::temp();
+    log::binfo_config(&conf, &buf, &&"foo")!!;
 
     String expected = "[INFO] foo";
 
-    test::eq(result.str_view(), expected);
-    test::eq(1, 2);
+    test::eq(buf.str_view(), expected);
 }
