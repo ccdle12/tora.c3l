@@ -4,6 +4,11 @@ import std::time::datetime;
 
 faultdef NULL_POINTER;
 
+struct LogConfig
+{
+    bool date;
+}
+
 enum LogLevel : int (String name) {
     TRACE = "TRACE",
     DEBUG = "DEBUG",
@@ -12,11 +17,11 @@ enum LogLevel : int (String name) {
     ERROR = "ERROR",
 }
 
-fn void? log_info(String *msg) => log(null, LogLevel.INFO, msg) @inline;
-fn void? b_log_info(DString* buffer, String *msg) => log(buffer, LogLevel.INFO, msg) @inline;
+fn void? log_info(String *msg) => log(null, null, &&LogLevel.INFO, msg) @inline;
+fn void? b_log_info(DString* buffer, String *msg) => log(null, buffer, &&LogLevel.INFO, msg) @inline;
+fn void? b_log_info_config(LogConfig* config, DString* buffer, String *msg) => log(config, buffer, &&LogLevel.INFO, msg);
 
-
-fn void? log(DString* buffer, LogLevel lvl, String *msg)
+fn void? log(LogConfig* config, DString* buffer, LogLevel* lvl, String *msg) @private
 {
     if (!msg) {
         return NULL_POINTER?;
@@ -24,7 +29,7 @@ fn void? log(DString* buffer, LogLevel lvl, String *msg)
 
     @pool()
     {
-        DString output = fmt_output(&lvl, msg);
+        DString output = fmt_output(config, lvl, msg);
 
         if (buffer) {
             buffer.appendf(output.str_view())!;
@@ -34,12 +39,27 @@ fn void? log(DString* buffer, LogLevel lvl, String *msg)
     };
 }
 
-fn DString fmt_output(LogLevel* lvl, String* msg)
+fn DString fmt_output(LogConfig* config, LogLevel* lvl, String* msg) @private
 {
-        DateTime now = datetime::now();
-
         DString output = dstring::temp();
-        output.appendf("[%s] [%d-%s-%s %s:%s:%s] %s", lvl.name, now.year, now.month.abbrev, now.day, now.hour, now.min, now.sec, *msg);
+        output.appendf("[%s] ", lvl.name);
 
+        // No config means include all information.
+        if (!config) {
+            fmt_date(output);
+        } else {
+            // User defined config, we need to check each flag and apply formatting.
+            if (config.date) {
+                fmt_date(output);
+            }
+        }
+
+        output.appendf("%s", *msg);
         return output;
+}
+
+fn void fmt_date(DString output) @private
+{
+    DateTime now = datetime::now();
+    output.appendf("[%d-%s-%s %s:%s:%s] ", now.year, now.month.abbrev, now.day, now.hour, now.min, now.sec);
 }
