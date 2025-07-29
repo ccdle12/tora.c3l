@@ -1,4 +1,5 @@
-module tora;
+module tora::log;
+
 import std::io;
 import std::time::datetime;
 
@@ -17,9 +18,9 @@ enum LogLevel : int (String name) {
     ERROR = "ERROR",
 }
 
-fn void? log_info(String *msg) => log(null, null, &&LogLevel.INFO, msg) @inline;
-fn void? b_log_info(DString* buffer, String *msg) => log(null, buffer, &&LogLevel.INFO, msg) @inline;
-fn void? b_log_info_config(LogConfig* config, DString* buffer, String *msg) => log(config, buffer, &&LogLevel.INFO, msg);
+fn void? info(String *msg) => log(null, null, &&LogLevel.INFO, msg) @inline;
+fn void? binfo(DString* buffer, String *msg) => log(null, buffer, &&LogLevel.INFO, msg) @inline;
+fn void? binfo_config(LogConfig* config, DString* buffer, String *msg) => log(config, buffer, &&LogLevel.INFO, msg);
 
 fn void? log(LogConfig* config, DString* buffer, LogLevel* lvl, String *msg) @private
 {
