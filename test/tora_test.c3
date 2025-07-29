@@ -1,15 +1,17 @@
 import tora;
 import std::io;
+import std::time;
+import std::core::dstring;
 
 fn void test_str_null() @test
 {
-    fault err = @catch(tora::log(null, 0, LogLevel.TRACE, null));
+    fault err = @catch(tora::log(null, LogLevel.TRACE, null));
     assert(err, "Passing null pointer for string is an error");
 }
 
 fn void test_positive_case() @test
 {
-    fault err = @catch(tora::log(null, 0, LogLevel.TRACE, &&"foo"));
+    fault err = @catch(tora::log(null, LogLevel.TRACE, &&"foo"));
     assert(!err, "Passing a string should not result in an error");
 }
 
@@ -27,11 +29,11 @@ fn void test_rethrowing() @test
 
 fn void test_log_output() @test
 {
-    char[1024] buf;
-    tora::b_log_info(&buf[0], $sizeof(buf), &&"foo")!!;
+    DString result = dstring::temp();
+    tora::b_log_info(&result, &&"foo")!!;
 
-    String result = (String) &buf;
     String expected = "[INFO] foo";
 
-    test::eq(result[:expected.len], expected);
+    test::eq(result.str_view(), expected);
+    test::eq(1, 2);
 }
