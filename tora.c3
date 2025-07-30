@@ -1,9 +1,15 @@
-module tora::log;
+module tora;
 
 import std::io;
 import std::time::datetime;
 
 faultdef NULL_POINTER;
+
+struct Logger
+{
+    Allocator allocator;
+    LogConfig config;
+}
 
 struct LogConfig
 {
@@ -11,9 +17,24 @@ struct LogConfig
     bool path;
 }
 
-fn void? info(String *msg) => log(null, null, &&LogLevel.INFO, msg) @inline;
-fn void? binfo(DString* buffer, String *msg) => log(null, buffer, &&LogLevel.INFO, msg) @inline;
-fn void? binfo_config(LogConfig* config, DString* buffer, String *msg) => log(config, buffer, &&LogLevel.INFO, msg);
+fn Logger* Logger.init(&self, Allocator allocator, LogConfig config)
+{
+    *self = { .allocator = allocator, .config = config };
+    return self;
+}
+
+fn Logger* Logger.tinit(&self)
+{
+    LogConfig config = { .date = true, .path = true };
+    return self.init(tmem, config) @inline;
+}
+
+fn Logger* Logger.tinit_conf(&self, LogConfig config) => self.init(tmem, config) @inline;
+
+fn void? Logger.info(&self, String* msg) => log(&self.config, null, &&LogLevel.INFO, msg) @inline;
+
+fn void? Logger.binfo(&self, DString* buffer, String* msg) => log(&self.config, buffer, &&LogLevel.INFO, msg) @inline;
+
 
 enum LogLevel : int (String name) @private
 {
