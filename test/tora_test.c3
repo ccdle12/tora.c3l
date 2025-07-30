@@ -30,11 +30,22 @@ fn void test_rethrowing() @test
 
 fn void test_log_config() @test
 {
-    LogConfig conf = { .date = false };
+    LogConfig conf = { .date = false, .path = false };
     DString buf = dstring::temp();
+
     log::binfo_config(&conf, &buf, &&"foo")!!;
 
-    String expected = "[INFO] foo";
+    String expected = "[INFO] - foo";
+    test::eq(buf.str_view(), expected);
+}
 
+fn void test_file_config() @test
+{
+    LogConfig conf = { .path = true };
+    DString buf = dstring::temp();
+
+    log::binfo_config(&conf, &buf, &&"foo")!!;
+
+    String expected = "[INFO] [tora.c3l] - foo";
     test::eq(buf.str_view(), expected);
 }
