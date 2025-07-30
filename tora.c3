@@ -17,7 +17,14 @@ struct LogConfig
     bool path;
 }
 
-fn Logger* Logger.init(&self, Allocator allocator, LogConfig config)
+fn Logger* Logger.init(&self, Allocator allocator)
+{
+    LogConfig config = { .date = true, .path = true };
+    *self = { .allocator = allocator, .config = config };
+    return self;
+}
+
+fn Logger* Logger.init_conf(&self, Allocator allocator, LogConfig config)
 {
     *self = { .allocator = allocator, .config = config };
     return self;
@@ -26,10 +33,10 @@ fn Logger* Logger.init(&self, Allocator allocator, LogConfig config)
 fn Logger* Logger.tinit(&self)
 {
     LogConfig config = { .date = true, .path = true };
-    return self.init(tmem, config) @inline;
+    return self.init_conf(tmem, config) @inline;
 }
 
-fn Logger* Logger.tinit_conf(&self, LogConfig config) => self.init(tmem, config) @inline;
+fn Logger* Logger.tinit_conf(&self, LogConfig config) => self.init_conf(tmem, config) @inline;
 
 fn void? Logger.info(&self, String* msg) => self.log(null, &&LogLevel.INFO, msg) @inline;
 
