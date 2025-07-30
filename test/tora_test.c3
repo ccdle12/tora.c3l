@@ -6,13 +6,19 @@ import std::core::dstring;
 
 fn void test_str_null() @test
 {
-    fault err = @catch(tora::log(null, null, &&LogLevel.TRACE, null));
+    tora::Logger log;
+    log.tinit();
+
+    fault err = @catch(log.info(null));
     assert(err, "Passing null pointer for string is an error");
 }
 
 fn void test_positive_case() @test
 {
-    fault err = @catch(tora::log(null, null, &&LogLevel.TRACE, &&"foo"));
+    tora::Logger log;
+    log.tinit();
+
+    fault err = @catch(log.info(&&"foo"));
     assert(!err, "Passing a string should not result in an error");
 }
 
