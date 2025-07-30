@@ -63,22 +63,22 @@ fn void? Logger.log(&self, DString* buffer, LogLevel* lvl, String *msg) @private
 
 fn DString? Logger.fmt_output(&self, LogLevel* lvl, String* msg) @private
 {
-        DString output;
-        output.init(self.allocator, 1024);
+    DString output;
+    output.init(self.allocator, 1024);
 
-        if (self.config.date) {
-            self.fmt_date(output)!;
-        }
+    if (self.config.date) {
+        self.fmt_date(output)!;
+    }
 
-        self.fmt_log_lvl(output, lvl)!;
+    self.fmt_log_lvl(output, lvl)!;
 
-        if (self.config.path) {
-            self.fmt_path(output)!;
-        }
+    if (self.config.path) {
+        self.fmt_path(output)!;
+    }
 
-        output.appendf("- ", *msg)!;
-        output.appendf("%s", *msg)!;
-        return output;
+    output.appendf("- ", *msg)!;
+    output.appendf("%s", *msg)!;
+    return output;
 }
 
 fn void? Logger.fmt_log_lvl(&self, DString output, LogLevel* lvl) @private
@@ -94,11 +94,11 @@ fn void? Logger.fmt_date(&self, DString output) @private
 
 fn void? Logger.fmt_path(&self, DString output) @private
 {
-        Path cwd = path::cwd(self.allocator)!;
-        defer cwd.free();
+    Path cwd = path::cwd(self.allocator)!;
+    defer cwd.free();
 
-        String[] split_path = cwd.path_string.tsplit("/");
-        String file_name = split_path[^1];
+    String[] split_path = cwd.path_string.tsplit("/");
+    String file_name = split_path[^1];
 
-        output.appendf("[%s] ", file_name)!;
+    output.appendf("[%s] ", file_name)!;
 }
