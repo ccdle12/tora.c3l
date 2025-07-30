@@ -65,3 +65,18 @@ fn void test_file_config() @test
     String expected = "[INFO] [tora.c3l] - foo";
     test::eq(buf.str_view(), expected);
 }
+
+fn void test_different_allocator() @test
+{
+    LibcAllocator alloc;
+
+    tora::LogConfig conf = { .path = true, .date = false };
+    tora::Logger log;
+    log.init_conf(&alloc, conf);
+
+    DString buf = dstring::temp();
+    log.binfo(&buf, &&"foo")!!;
+
+    String expected = "[INFO] [tora.c3l] - foo";
+    test::eq(buf.str_view(), expected);
+}
