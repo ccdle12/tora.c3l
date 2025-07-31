@@ -3,8 +3,6 @@ module tora;
 import std::io;
 import std::time::datetime;
 
-faultdef NULL_POINTER;
-
 <*
  Logger is the main struct for logging outputs.
 *>
@@ -22,6 +20,18 @@ struct LogConfig
 {
     bool date;
     bool path;
+}
+
+<*
+ The LogLevels available for logging.
+*>
+enum LogLevel : int (String name) @private
+{
+    TRACE = "TRACE",
+    DEBUG = "DEBUG",
+    INFO  = "INFO",
+    WARN  = "WARN",
+    ERROR = "ERROR",
 }
 
 <*
@@ -82,20 +92,7 @@ fn void? Logger.info(&self, String* msg) => self.log(null, &&LogLevel.INFO, msg)
  @param [&out] buffer: `The output buffer for writing the log.`
  @param [&in] msg: `The input message for logging.`
 *>
-fn void? Logger.binfo(&self, DString* buffer, String* msg) => self.log(buffer, &&LogLevel.INFO, msg) @inline;
-
-
-<*
- The LogLevels available for logging.
-*>
-enum LogLevel : int (String name) @private
-{
-    TRACE = "TRACE",
-    DEBUG = "DEBUG",
-    INFO  = "INFO",
-    WARN  = "WARN",
-    ERROR = "ERROR",
-}
+fn void? Logger.binfo(&self, OutStream buffer, String* msg) => self.log(buffer, &&LogLevel.INFO, msg) @inline;
 
 <*
  Internal log function implementation.
@@ -105,13 +102,13 @@ enum LogLevel : int (String name) @private
  @param [&in] lvl: `The log level for the logging output.`
  @param [&in] msg: `The input message for logging.`
 *>
-fn void? Logger.log(&self, DString* buffer, LogLevel* lvl, String *msg) @private
+fn void? Logger.log(&self, OutStream buffer, LogLevel* lvl, String* msg) @private
 {
     DString output = self.fmt_output(lvl, msg)!;
     defer output.free();
 
     if (buffer) {
-        buffer.appendf(output.str_view())!;
+        buffer.write(output.str_view())!;
     } else {
         io::printn(output.str_view());
     }
@@ -141,6 +138,7 @@ fn DString? Logger.fmt_output(&self, LogLevel* lvl, String* msg) @private
 
     output.appendf("- ", *msg)!;
     output.appendf("%s", *msg)!;
+
     return output;
 }
 

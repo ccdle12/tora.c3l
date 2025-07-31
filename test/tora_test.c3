@@ -28,11 +28,11 @@ fn void test_log_config() @test
     tora::Logger log;
     log.tinit_conf(conf);
 
-    DString buf = dstring::temp();
-    log.binfo(&buf, &&"foo")!!;
+    DString result = dstring::temp();
+    log.binfo(&result, &&"foo")!!;
 
     String expected = "[INFO] - foo";
-    test::eq(buf.str_view(), expected);
+    test::eq(result.str_view(), expected);
 }
 
 fn void test_file_config() @test
@@ -41,11 +41,11 @@ fn void test_file_config() @test
     tora::Logger log;
     log.tinit_conf(conf);
 
-    DString buf = dstring::temp();
-    log.binfo(&buf, &&"foo")!!;
+    DString result = dstring::temp();
+    log.binfo(&result, &&"foo")!!;
 
     String expected = "[INFO] [tora.c3l] - foo";
-    test::eq(buf.str_view(), expected);
+    test::eq(result.str_view(), expected);
 }
 
 fn void test_different_allocator() @test
@@ -56,9 +56,9 @@ fn void test_different_allocator() @test
     tora::Logger log;
     log.init_conf(&alloc, conf);
 
-    DString buf = dstring::temp();
-    log.binfo(&buf, &&"foo")!!;
+    DString result = dstring::temp();
+    log.binfo(&result, &&"foo")!!;
 
     String expected = "[INFO] [tora.c3l] - foo";
-    test::eq(buf.str_view(), expected);
+    test::eq(result.str_view(), expected);
 }
