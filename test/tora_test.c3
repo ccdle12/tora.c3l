@@ -4,15 +4,6 @@ import std::io;
 import std::time;
 import std::core::dstring;
 
-fn void test_str_null() @test
-{
-    tora::Logger log;
-    log.tinit();
-
-    fault err = @catch(log.info(null));
-    assert(err, "Passing null pointer for string is an error");
-}
-
 fn void test_positive_case() @test
 {
     tora::Logger log;
@@ -29,15 +20,6 @@ fn void test_info() @test
 
     fault err = @catch(log.info(&&"foo"));
     assert(!err, "Calling log functions for specific level should not result in an error");
-}
-
-fn void test_rethrowing() @test
-{
-    tora::Logger log;
-    log.tinit();
-
-    fault err = @catch(log.info(null));
-    assert(err, "Should rethrow the specific log functions");
 }
 
 fn void test_log_config() @test

@@ -5,18 +5,31 @@ import std::time::datetime;
 
 faultdef NULL_POINTER;
 
+<*
+ Logger is the main struct for logging outputs.
+*>
 struct Logger
 {
     Allocator allocator;
     LogConfig config;
 }
 
+<*
+ LogConfig allows the caller to be able choose the level detail in the log
+ formatting.
+*>
 struct LogConfig
 {
     bool date;
     bool path;
 }
 
+<*
+ Init the Logger with an Allocator.
+
+ @param [inout] allocator
+ @return  `A Logger with default config and specific Allocator`
+*>
 fn Logger* Logger.init(&self, Allocator allocator)
 {
     LogConfig config = { .date = true, .path = true };
@@ -24,25 +37,57 @@ fn Logger* Logger.init(&self, Allocator allocator)
     return self;
 }
 
+<*
+ Init the Logger with an Allocator and custom LogConfig.
+
+ @param [inout] allocator
+ @param config
+ @return  `A Logger with a custom LogConfig and specific Allocator`
+*>
 fn Logger* Logger.init_conf(&self, Allocator allocator, LogConfig config)
 {
     *self = { .allocator = allocator, .config = config };
     return self;
 }
 
-fn Logger* Logger.tinit(&self)
-{
-    LogConfig config = { .date = true, .path = true };
-    return self.init_conf(tmem, config) @inline;
-}
+<*
+ Init the Logger with tmem.
 
+ @param [in] self
+ @return  `A Logger with default LogConfig and initialized with tmem`
+*>
+fn Logger* Logger.tinit(&self) => self.init(tmem) @inline;
+
+<*
+ Init the Logger with tmem and a custom LogConfig.
+
+ @param [in] self
+ @param config
+ @return  `A Logger with a custom LogConfig with tmem as the Allocator.`
+*>
 fn Logger* Logger.tinit_conf(&self, LogConfig config) => self.init_conf(tmem, config) @inline;
 
+<*
+ The default info level logging.
+
+ @param [in] self
+ @param [&in] msg: `The input message for logging.`
+*>
 fn void? Logger.info(&self, String* msg) => self.log(null, &&LogLevel.INFO, msg) @inline;
 
+<*
+ Info level logging but writes out to a buffer.
+
+ @param [in] self
+ @param [&out] buffer: `The output buffer for writing the log.`
+ @param [&in] msg: `The input message for logging.`
+*>
 fn void? Logger.binfo(&self, DString* buffer, String* msg) => self.log(buffer, &&LogLevel.INFO, msg) @inline;
 
 
+<*
+ The LogLevels available for logging.
+*>
 enum LogLevel : int (String name) @private
 {
     TRACE = "TRACE",
@@ -52,12 +97,16 @@ enum LogLevel : int (String name) @private
     ERROR = "ERROR",
 }
 
+<*
+ Internal log function implementation.
+
+ @param [in] self
+ @param [out] buffer: `The output buffer for writing the log, can be null.`
+ @param [&in] lvl: `The log level for the logging output.`
+ @param [&in] msg: `The input message for logging.`
+*>
 fn void? Logger.log(&self, DString* buffer, LogLevel* lvl, String *msg) @private
 {
-    if (!msg) {
-        return NULL_POINTER?;
-    }
-
     DString output = self.fmt_output(lvl, msg)!;
     defer output.free();
 
@@ -68,6 +117,13 @@ fn void? Logger.log(&self, DString* buffer, LogLevel* lvl, String *msg) @private
     }
 }
 
+<*
+ Formats the main output for the logger.
+
+ @param [in] self
+ @param [&in] lvl: `The log level for the logging output.`
+ @param [&in] msg: `The input message for logging.`
+*>
 fn DString? Logger.fmt_output(&self, LogLevel* lvl, String* msg) @private
 {
     DString output;
@@ -88,6 +144,13 @@ fn DString? Logger.fmt_output(&self, LogLevel* lvl, String* msg) @private
     return output;
 }
 
+<*
+ Formats the log level.
+
+ @param [in] self
+ @param [&out] output: `The output buffer for writing log level.`
+ @param [&in] lvl: `The log level.`
+*>
 fn void? Logger.fmt_log_lvl(&self, DString output, LogLevel* lvl) @private
 {
     output.appendf("[%s] ", lvl.name)!;
@@ -99,6 +162,12 @@ fn void? Logger.fmt_date(&self, DString output) @private
     output.appendf("[%d-%s-%s %s:%s:%s] ", now.year, now.month.abbrev, now.day, now.hour, now.min, now.sec)!;
 }
 
+<*
+ Formats the path for the logging output.
+
+ @param [in] self
+ @param [&out] output: `The output buffer for writing log level.`
+*>
 fn void? Logger.fmt_path(&self, DString output) @private
 {
     Path cwd = path::cwd(self.allocator)!;
