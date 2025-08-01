@@ -50,13 +50,13 @@ fn Logger temp()
 <*
  Quick tmem initialization of logger with conf.
 
- @param config
+ @param conf
  @return  `A Logger with a custom LogConfig`
 *>
 fn Logger temp_with_conf(LogConfig conf)
 {
    Logger log;
-   log.tinit_conf(conf);
+   log.tinit_with_conf(conf);
 
    return log;
 }
@@ -102,7 +102,7 @@ fn Logger* Logger.tinit(&self) => self.init(tmem) @inline;
  @param config
  @return  `A Logger with a custom LogConfig with tmem as the Allocator.`
 *>
-fn Logger* Logger.tinit_conf(&self, LogConfig config) => self.init_conf(tmem, config) @inline;
+fn Logger* Logger.tinit_with_conf(&self, LogConfig config) => self.init_conf(tmem, config) @inline;
 
 <*
  The default info level logging.
