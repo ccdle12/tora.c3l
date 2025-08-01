@@ -35,6 +35,33 @@ enum LogLevel : int (String name) @private
 }
 
 <*
+ Quick tmem initialization of logger.
+
+ @return  `A Logger with default LogConfig and initialized with tmem`
+*>
+fn Logger temp()
+{
+   Logger log;
+   log.tinit();
+
+   return log;
+}
+
+<*
+ Quick tmem initialization of logger with conf.
+
+ @param conf
+ @return  `A Logger with a custom LogConfig`
+*>
+fn Logger temp_with_conf(LogConfig conf)
+{
+   Logger log;
+   log.tinit_with_conf(conf);
+
+   return log;
+}
+
+<*
  Init the Logger with an Allocator.
 
  @param [inout] allocator
@@ -75,7 +102,7 @@ fn Logger* Logger.tinit(&self) => self.init(tmem) @inline;
  @param config
  @return  `A Logger with a custom LogConfig with tmem as the Allocator.`
 *>
-fn Logger* Logger.tinit_conf(&self, LogConfig config) => self.init_conf(tmem, config) @inline;
+fn Logger* Logger.tinit_with_conf(&self, LogConfig config) => self.init_conf(tmem, config) @inline;
 
 <*
  The default info level logging.
@@ -109,6 +136,7 @@ fn void? Logger.log(&self, OutStream buffer, LogLevel* lvl, String* msg) @privat
 
     if (buffer) {
         buffer.write(output.str_view())!;
+        if (&buffer.flush) buffer.flush()!;
     } else {
         io::printn(output.str_view());
     }
