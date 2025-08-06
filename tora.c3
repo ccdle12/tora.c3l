@@ -20,12 +20,21 @@ struct LogConfig
 {
     bool date;
     bool path;
+    OutStream out;
+}
+
+<*
+ Creates a default log configuration.
+*>
+fn LogConfig init_log_conf(bool date=true, bool path=true, OutStream out=io::stdout())
+{
+    return { .date = date, .path = path, .out = out };
 }
 
 <*
  The LogLevels available for logging.
 *>
-enum LogLevel : int (String name) @private
+enum LogLevel : int (String name)
 {
     TRACE = "TRACE",
     DEBUG = "DEBUG",
@@ -64,20 +73,21 @@ fn Logger temp_with_conf(LogConfig conf)
 <*
  Init the Logger with an Allocator.
 
- @param [inout] allocator
+ @require allocator != null
+ @param [&inout] allocator
  @return  `A Logger with default config and specific Allocator`
 *>
 fn Logger* Logger.init(&self, Allocator allocator)
 {
-    LogConfig config = { .date = true, .path = true };
-    *self = { .allocator = allocator, .config = config };
+    LogConfig conf = init_log_conf();
+    *self = { .allocator = allocator, .config = conf };
     return self;
 }
 
 <*
  Init the Logger with an Allocator and custom LogConfig.
 
- @param [inout] allocator
+ @param [&inout] allocator
  @param config
  @return  `A Logger with a custom LogConfig and specific Allocator`
 *>
@@ -108,38 +118,24 @@ fn Logger* Logger.tinit_with_conf(&self, LogConfig config) => self.init_conf(tme
  The default info level logging.
 
  @param [in] self
- @param [&in] msg: `The input message for logging.`
+ @param [in] msg: `The input message for logging.`
 *>
-fn void? Logger.info(&self, String* msg) => self.log(null, &&LogLevel.INFO, msg) @inline;
-
-<*
- Info level logging but writes out to a buffer.
-
- @param [in] self
- @param [&out] buffer: `The output buffer for writing the log.`
- @param [&in] msg: `The input message for logging.`
-*>
-fn void? Logger.binfo(&self, OutStream buffer, String* msg) => self.log(buffer, &&LogLevel.INFO, msg) @inline;
+fn void? Logger.info(&self, String msg) => self.log(&&LogLevel.INFO, msg) @inline;
 
 <*
  Internal log function implementation.
 
  @param [in] self
- @param [out] buffer: `The output buffer for writing the log, can be null.`
  @param [&in] lvl: `The log level for the logging output.`
- @param [&in] msg: `The input message for logging.`
+ @param [in] msg: `The input message for logging.`
 *>
-fn void? Logger.log(&self, OutStream buffer, LogLevel* lvl, String* msg) @private
+fn void? Logger.log(&self, LogLevel* lvl, String msg) @private
 {
     DString output = self.fmt_output(lvl, msg)!;
     defer output.free();
 
-    if (buffer) {
-        buffer.write(output.str_view())!;
-        if (&buffer.flush) buffer.flush()!;
-    } else {
-        io::printn(output.str_view());
-    }
+    self.config.out.write(output.str_view())!;
+    if (&self.config.out.flush) self.config.out.flush()!;
 }
 
 <*
@@ -147,9 +143,9 @@ fn void? Logger.log(&self, OutStream buffer, LogLevel* lvl, String* msg) @privat
 
  @param [in] self
  @param [&in] lvl: `The log level for the logging output.`
- @param [&in] msg: `The input message for logging.`
+ @param [in] msg: `The input message for logging.`
 *>
-fn DString? Logger.fmt_output(&self, LogLevel* lvl, String* msg) @private
+fn DString? Logger.fmt_output(&self, LogLevel* lvl, String msg) @private
 {
     DString output;
     output.init(self.allocator, 1024);
@@ -164,8 +160,8 @@ fn DString? Logger.fmt_output(&self, LogLevel* lvl, String* msg) @private
         self.fmt_path(output)!;
     }
 
-    output.appendf("- ", *msg)!;
-    output.appendf("%s", *msg)!;
+    output.appendf("- ")!;
+    output.appendf("%s", msg)!;
 
     return output;
 }
