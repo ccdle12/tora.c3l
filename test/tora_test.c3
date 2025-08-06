@@ -8,7 +8,7 @@ fn void test_positive_case() @test
 {
     Logger log = temp();
 
-    fault err = @catch(log.info(&&"foo"));
+    fault err = @catch(log.info("foo"));
     assert(!err, "Passing a string should not result in an error");
 }
 
@@ -16,16 +16,16 @@ fn void test_info() @test
 {
     Logger log = temp();
 
-    fault err = @catch(log.info(&&"foo"));
+    fault err = @catch(log.info("foo"));
     assert(!err, "Calling log functions for specific level should not result in an error");
 }
 
 fn void test_log_config() @test
 {
-    Logger log = temp_with_conf({ .date = false, .path = false});
-
     DString result = dstring::temp();
-    log.binfo(&result, &&"foo")!!;
+
+    Logger log = temp_with_conf({ .out = &result });
+    log.info("foo")!!;
 
     String expected = "[INFO] - foo";
     test::eq(result.str_view(), expected);
@@ -33,10 +33,10 @@ fn void test_log_config() @test
 
 fn void test_file_config() @test
 {
-    Logger log = temp_with_conf({ .path = true });
-
     DString result = dstring::temp();
-    log.binfo(&result, &&"foo")!!;
+
+    Logger log = temp_with_conf({ .path = true, .out = &result });
+    log.info("foo")!!;
 
     String expected = "[INFO] [tora.c3l] - foo";
     test::eq(result.str_view(), expected);
@@ -45,12 +45,11 @@ fn void test_file_config() @test
 fn void test_different_allocator() @test
 {
     LibcAllocator alloc;
+    DString result = dstring::temp();
 
     Logger log;
-    log.init_conf(&alloc, { .path = true, .date = false});
-
-    DString result = dstring::temp();
-    log.binfo(&result, &&"foo")!!;
+    log.init_conf(&alloc, { .path = true, .out = &result });
+    log.info("foo")!!;
 
     String expected = "[INFO] [tora.c3l] - foo";
     test::eq(result.str_view(), expected);
@@ -62,9 +61,10 @@ fn void test_log_flush() @test
 {
     LibcAllocator alloc;
 
-    Logger log;
-    log.init_conf(&alloc, { .path = true, .date = false});
+    LogConfig conf = init_log_conf();
+    conf.date = false;
 
-    File* file = io::stdout();
-    log.binfo(file, &&"foo")!!;
+    Logger log;
+    log.init_conf(&alloc, conf);
+    log.info("foo")!!;
 }
