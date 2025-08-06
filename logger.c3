@@ -13,37 +13,6 @@ struct Logger
 }
 
 <*
- LogConfig allows the caller to be able choose the level detail in the log
- formatting.
-*>
-struct LogConfig
-{
-    bool date;
-    bool path;
-    OutStream out;
-}
-
-<*
- Creates a default log configuration.
-*>
-fn LogConfig init_log_conf(bool date=true, bool path=true, OutStream out=io::stdout())
-{
-    return { .date = date, .path = path, .out = out };
-}
-
-<*
- The LogLevels available for logging.
-*>
-enum LogLevel : int (String name)
-{
-    TRACE = "TRACE",
-    DEBUG = "DEBUG",
-    INFO  = "INFO",
-    WARN  = "WARN",
-    ERROR = "ERROR",
-}
-
-<*
  Quick tmem initialization of logger.
 
  @return  `A Logger with default LogConfig and initialized with tmem`
@@ -79,8 +48,7 @@ fn Logger temp_with_conf(LogConfig conf)
 *>
 fn Logger* Logger.init(&self, Allocator allocator)
 {
-    LogConfig conf = init_log_conf();
-    *self = { .allocator = allocator, .config = conf };
+    *self = { .allocator = allocator, .config = init_log_conf() };
     return self;
 }
 
@@ -120,18 +88,18 @@ fn Logger* Logger.tinit_with_conf(&self, LogConfig config) => self.init_conf(tme
  @param [in] self
  @param [in] msg: `The input message for logging.`
 *>
-fn void? Logger.info(&self, String msg) => self.log(&&LogLevel.INFO, msg) @inline;
+fn void? Logger.info(&self, String msg) => self.log(LogLevel.INFO, msg) @inline;
 
 <*
  Internal log function implementation.
 
  @param [in] self
- @param [&in] lvl: `The log level for the logging output.`
+ @param lvl: `The log level for the logging output.`
  @param [in] msg: `The input message for logging.`
 *>
-fn void? Logger.log(&self, LogLevel* lvl, String msg) @private
+fn void? Logger.log(&self, LogLevel lvl, String msg) @private
 {
-    DString output = self.fmt_output(lvl, msg)!;
+    DString output = self.fmt_output(&lvl, msg)!;
     defer output.free();
 
     self.config.out.write(output.str_view())!;
