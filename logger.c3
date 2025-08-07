@@ -87,7 +87,7 @@ fn Logger* Logger.tinit_with_conf(&self, LogConfig config) => self.init_conf(tme
  @param [in] self
  @param [in] msg: `The input message for logging.`
 *>
-fn void? Logger.info(&self, String msg, String file=$$FILE, isz line_num=$$LINE) => self.log(LogLevel.INFO, msg, file, line_num) @inline;
+fn void? Logger.info(&self, String msg, args..., String file=$$FILE, isz line_num=$$LINE) => self.log(LogLevel.INFO, string::tformat(msg, ...args), file, line_num) @inline;
 
 <*
  Internal log function implementation.
@@ -152,7 +152,7 @@ fn void? Logger.fmt_log_lvl(&self, DString output, LogLevel* lvl) @private
 
 fn void? Logger.fmt_date(&self, DString output) @private
 {
-    output.appendf("[%s %s]", $$DATE, $$TIME);
+    output.appendf("[%s %s] ", $$DATE, $$TIME);
 }
 
 <*
