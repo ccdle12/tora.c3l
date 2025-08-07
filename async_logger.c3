@@ -22,6 +22,7 @@ struct AsyncLogger
 struct BufMsg
 {
     String msg;
+    String file;
     isz line_num;
     LogLevel lvl;
 }
@@ -49,7 +50,9 @@ fn AsyncLogger*? AsyncLogger.init(&self, Allocator allocator, OutStream out)
 }
 
 fn void? AsyncLogger.info(&self, String msg, args..., String file=$$FILE, isz line_num=$$LINE) {
-    self.chan.push({ .msg = string::tformat(msg, ...args),
+
+    self.chan.push({ .msg = string::tformat(msg, args),
+                     .file = file,
                      .line_num = line_num,
                      .lvl = LogLevel.INFO })!;
 }
@@ -80,7 +83,7 @@ fn void? worker_thread(AsyncLogger* alog) @private
             switch (buf_msg.lvl)
             {
                 case INFO:
-                    alog.logger.info(buf_msg.msg, buf_msg.line_num)!;
+                    alog.logger.info(buf_msg.msg, file: buf_msg.file, line_num: buf_msg.line_num)!;
                 default:
                    io::printfn("error for now");
             }
