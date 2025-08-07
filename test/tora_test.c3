@@ -12,11 +12,20 @@ fn void test_positive_case() @test
     assert(!err, "Passing a string should not result in an error");
 }
 
-fn void test_info() @test
+fn void test_no_error() @test
 {
     Logger log = temp();
 
     fault err = @catch(log.info("foo"));
+    assert(!err, "Calling log functions for specific level should not result in an error");
+}
+
+fn void test_log_fmt() @test
+{
+    Logger log = temp();
+
+    String foo = "foo";
+    fault err = @catch(log.info("%d%d%d %s", 1, 2, 3, &foo));
     assert(!err, "Calling log functions for specific level should not result in an error");
 }
 
@@ -38,11 +47,10 @@ fn void test_file_config() @test
     DString out = dstring::temp();
 
     Logger log = temp_with_conf({ .path = true, .out = &out });
-    log.info("foo")!!;
+    log.info("foo: %d, %s", 5, "bar")!!;
+    String expected = @sprintf("[INFO] [tora_test.c3:%s] - foo: 5, bar", $$LINE-1);
 
     String result = strip_log_output(out.str_view());
-    String expected = "[INFO] [tora_test.c3:41] - foo";
-
     test::eq(result, expected);
 }
 
@@ -54,10 +62,9 @@ fn void test_different_allocator() @test
     Logger log;
     log.init_conf(&alloc, { .path = true, .out = &out });
     log.info("foo")!!;
+    String expected = @sprintf("[INFO] [tora_test.c3:%s] - foo", $$LINE-1);
 
     String result = strip_log_output(out.str_view());
-    String expected = "[INFO] [tora_test.c3:56] - foo";
-
     test::eq(result, expected);
 }
 
