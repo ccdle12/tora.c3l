@@ -22,37 +22,43 @@ fn void test_info() @test
 
 fn void test_log_config() @test
 {
-    DString result = dstring::temp();
+    DString out = dstring::temp();
 
-    Logger log = temp_with_conf({ .out = &result });
+    Logger log = temp_with_conf({ .out = &out });
     log.info("foo")!!;
 
+    String result = strip_log_output(out.str_view());
     String expected = "[INFO] - foo";
-    test::eq(result.str_view(), expected);
+
+    test::eq(result, expected);
 }
 
 fn void test_file_config() @test
 {
-    DString result = dstring::temp();
+    DString out = dstring::temp();
 
-    Logger log = temp_with_conf({ .path = true, .out = &result });
+    Logger log = temp_with_conf({ .path = true, .out = &out });
     log.info("foo")!!;
 
-    String expected = "[INFO] [tora.c3l] - foo";
-    test::eq(result.str_view(), expected);
+    String result = strip_log_output(out.str_view());
+    String expected = "[INFO] [tora_test.c3:41] - foo";
+
+    test::eq(result, expected);
 }
 
 fn void test_different_allocator() @test
 {
     LibcAllocator alloc;
-    DString result = dstring::temp();
+    DString out = dstring::temp();
 
     Logger log;
-    log.init_conf(&alloc, { .path = true, .out = &result });
+    log.init_conf(&alloc, { .path = true, .out = &out });
     log.info("foo")!!;
 
-    String expected = "[INFO] [tora.c3l] - foo";
-    test::eq(result.str_view(), expected);
+    String result = strip_log_output(out.str_view());
+    String expected = "[INFO] [tora_test.c3:56] - foo";
+
+    test::eq(result, expected);
 }
 
 // NOTE: Kind of a hacky test, File implements flush(), so I'm forcing that
@@ -67,4 +73,6 @@ fn void test_log_flush() @test
     Logger log;
     log.init_conf(&alloc, conf);
     log.info("foo")!!;
+
+    //test::eq(1, 2);
 }
