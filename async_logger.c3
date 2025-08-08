@@ -38,11 +38,8 @@ fn AsyncLogger*? AsyncLogger.init(&self, Allocator allocator, OutStream out)
 {
     *self = { .allocator = allocator };
 
-    LogConfig conf = init_log_conf();
-    conf.out = out;
-
     self.chan.init(self.allocator)!;
-    self.logger.init_conf(self.allocator, conf);
+    self.logger.init(self.allocator, out);
     self.thread.create((ThreadFn) &worker_thread, self)!;
     self.initialized = true;
 
