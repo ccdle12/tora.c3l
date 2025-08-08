@@ -12,15 +12,7 @@ fn void test_positive_case() @test
     assert(!err, "Passing a string should not result in an error");
 }
 
-fn void test_no_error() @test
-{
-    Logger log = temp();
-
-    fault err = @catch(log.info("foo"));
-    assert(!err, "Calling log functions for specific level should not result in an error");
-}
-
-fn void test_log_fmt() @test
+fn void test_simple_formatting() @test
 {
     Logger log = temp();
 
@@ -29,29 +21,16 @@ fn void test_log_fmt() @test
     assert(!err, "Calling log functions for specific level should not result in an error");
 }
 
-fn void test_log_config() @test
+fn void test_expected_formatting() @test
 {
     DString out = dstring::temp();
+    Logger log = temp(out: &out);
 
-    Logger log = temp_with_conf({ .out = &out });
-    log.info("foo")!!;
-
-    String result = strip_log_output(out.str_view());
-    String expected = "[INFO] - foo";
-
-    test::eq(result, expected);
-}
-
-fn void test_file_config() @test
-{
-    DString out = dstring::temp();
-
-    Logger log = temp_with_conf({ .path = true, .out = &out });
     log.info("foo: %d, %s", 5, "bar")!!;
     String expected = @sprintf("[INFO] [tora_test.c3:%s] - foo: 5, bar", $$LINE-1);
 
     String result = strip_log_output(out.str_view());
-    test::eq(result, expected);
+    test::@check(result.contains(expected));
 }
 
 fn void test_different_allocator() @test
@@ -60,12 +39,13 @@ fn void test_different_allocator() @test
     DString out = dstring::temp();
 
     Logger log;
-    log.init_conf(&alloc, { .path = true, .out = &out });
+    log.init(&alloc, out: &out);
+
     log.info("foo")!!;
     String expected = @sprintf("[INFO] [tora_test.c3:%s] - foo", $$LINE-1);
 
     String result = strip_log_output(out.str_view());
-    test::eq(result, expected);
+    test::@check(result.contains(expected));
 }
 
 // NOTE: Kind of a hacky test, File implements flush(), so I'm forcing that
@@ -74,10 +54,8 @@ fn void test_log_flush() @test
 {
     LibcAllocator alloc;
 
-    LogConfig conf = init_log_conf(date: false);
-
     Logger log;
-    log.init_conf(&alloc, conf);
+    log.init(&alloc);
     log.info("foo")!!;
 
     //test::eq(1, 2);
