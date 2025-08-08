@@ -1,9 +1,8 @@
-module async_tora;
+module tora;
 
 import std::io;
 import std::thread;
 import std::collections;
-import tora;
 
 alias BufChan = channel::BufferedChannel{BufMsg};
 
@@ -23,6 +22,8 @@ struct AsyncLogger
 struct BufMsg
 {
     String msg;
+    String file;
+    isz line_num;
     LogLevel lvl;
 }
 
@@ -31,11 +32,14 @@ struct BufMsg
  @require allocator != null
 
  @param [&inout] allocator
- @param conf: `The LogConfig for writing out via the Logger`
+ @param [&out]   out: `A pointer to the underlying type implementing OutStream.`
 *>
-fn AsyncLogger*? AsyncLogger.init(&self, Allocator allocator, LogConfig conf)
+fn AsyncLogger*? AsyncLogger.init(&self, Allocator allocator, OutStream out)
 {
     *self = { .allocator = allocator };
+
+    LogConfig conf = init_log_conf();
+    conf.out = out;
 
     self.chan.init(self.allocator)!;
     self.logger.init_conf(self.allocator, conf);
@@ -45,8 +49,12 @@ fn AsyncLogger*? AsyncLogger.init(&self, Allocator allocator, LogConfig conf)
     return self;
 }
 
-fn void? AsyncLogger.info(&self, String msg) {
-    self.chan.push({ .msg = msg, .lvl = LogLevel.INFO })!;
+fn void? AsyncLogger.info(&self, String msg, args..., String file=$$FILE, isz line_num=$$LINE) {
+
+    self.chan.push({ .msg = string::tformat(msg, args),
+                     .file = file,
+                     .line_num = line_num,
+                     .lvl = LogLevel.INFO })!;
 }
 
 fn void? AsyncLogger.free(&self)
@@ -75,7 +83,7 @@ fn void? worker_thread(AsyncLogger* alog) @private
             switch (buf_msg.lvl)
             {
                 case INFO:
-                    alog.logger.info(buf_msg.msg)!;
+                    alog.logger.info(buf_msg.msg, file: buf_msg.file, line_num: buf_msg.line_num)!;
                 default:
                    io::printfn("error for now");
             }

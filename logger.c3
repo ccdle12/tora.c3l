@@ -1,7 +1,6 @@
 module tora;
 
 import std::io;
-import std::time::datetime;
 
 <*
  Logger is the main struct for logging outputs.
@@ -10,37 +9,6 @@ struct Logger
 {
     Allocator allocator;
     LogConfig config;
-}
-
-<*
- LogConfig allows the caller to be able choose the level detail in the log
- formatting.
-*>
-struct LogConfig
-{
-    bool date;
-    bool path;
-    OutStream out;
-}
-
-<*
- Creates a default log configuration.
-*>
-fn LogConfig init_log_conf(bool date=true, bool path=true, OutStream out=io::stdout())
-{
-    return { .date = date, .path = path, .out = out };
-}
-
-<*
- The LogLevels available for logging.
-*>
-enum LogLevel : int (String name)
-{
-    TRACE = "TRACE",
-    DEBUG = "DEBUG",
-    INFO  = "INFO",
-    WARN  = "WARN",
-    ERROR = "ERROR",
 }
 
 <*
@@ -79,8 +47,7 @@ fn Logger temp_with_conf(LogConfig conf)
 *>
 fn Logger* Logger.init(&self, Allocator allocator)
 {
-    LogConfig conf = init_log_conf();
-    *self = { .allocator = allocator, .config = conf };
+    *self = { .allocator = allocator, .config = init_log_conf() };
     return self;
 }
 
@@ -120,18 +87,20 @@ fn Logger* Logger.tinit_with_conf(&self, LogConfig config) => self.init_conf(tme
  @param [in] self
  @param [in] msg: `The input message for logging.`
 *>
-fn void? Logger.info(&self, String msg) => self.log(&&LogLevel.INFO, msg) @inline;
+fn void? Logger.info(&self, String msg, args..., String file=$$FILE, isz line_num=$$LINE) => self.log(LogLevel.INFO, string::tformat(msg, ...args), file, line_num) @inline;
 
 <*
  Internal log function implementation.
 
  @param [in] self
- @param [&in] lvl: `The log level for the logging output.`
+ @param      lvl: `The log level for the logging output.`
  @param [in] msg: `The input message for logging.`
+ @param      file: `The file name of the caller.`
+ @param      line_num: `The line number of where the logger is called.`
 *>
-fn void? Logger.log(&self, LogLevel* lvl, String msg) @private
+fn void? Logger.log(&self, LogLevel lvl, String msg, String file, isz line_num) @private
 {
-    DString output = self.fmt_output(lvl, msg)!;
+    DString output = self.fmt_output(&lvl, msg, file, line_num)!;
     defer output.free();
 
     self.config.out.write(output.str_view())!;
@@ -145,10 +114,12 @@ fn void? Logger.log(&self, LogLevel* lvl, String msg) @private
  @param [&in] lvl: `The log level for the logging output.`
  @param [in] msg: `The input message for logging.`
 *>
-fn DString? Logger.fmt_output(&self, LogLevel* lvl, String msg) @private
+fn DString? Logger.fmt_output(&self, LogLevel* lvl, String msg, String file, isz line_num) @private
 {
     DString output;
     output.init(self.allocator, 1024);
+
+    output.appendf("%s", get_level_color(lvl));
 
     if (self.config.date) {
         self.fmt_date(output)!;
@@ -157,12 +128,13 @@ fn DString? Logger.fmt_output(&self, LogLevel* lvl, String msg) @private
     self.fmt_log_lvl(output, lvl)!;
 
     if (self.config.path) {
-        self.fmt_path(output)!;
+        self.fmt_path(output, file, line_num)!;
     }
 
     output.appendf("- ")!;
-    output.appendf("%s", msg)!;
+    output.appendf("%s\n", msg)!;
 
+    output.appendf("%s", COLOR_RESET);
     return output;
 }
 
@@ -180,8 +152,7 @@ fn void? Logger.fmt_log_lvl(&self, DString output, LogLevel* lvl) @private
 
 fn void? Logger.fmt_date(&self, DString output) @private
 {
-    DateTime now = datetime::now();
-    output.appendf("[%d-%s-%s %s:%s:%s] ", now.year, now.month.abbrev, now.day, now.hour, now.min, now.sec)!;
+    output.appendf("[%s %s] ", $$DATE, $$TIME);
 }
 
 <*
@@ -190,13 +161,7 @@ fn void? Logger.fmt_date(&self, DString output) @private
  @param [in] self
  @param [&out] output: `The output buffer for writing log level.`
 *>
-fn void? Logger.fmt_path(&self, DString output) @private
+fn void? Logger.fmt_path(&self, DString output, String file, isz line_num) @private
 {
-    Path cwd = path::cwd(self.allocator)!;
-    defer cwd.free();
-
-    String[] split_path = cwd.path_string.tsplit("/");
-    String file_name = split_path[^1];
-
-    output.appendf("[%s] ", file_name)!;
+    output.appendf("[%s:%s] ", file, line_num)!;
 }
