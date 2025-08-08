@@ -74,8 +74,7 @@ fn void test_log_flush() @test
 {
     LibcAllocator alloc;
 
-    LogConfig conf = init_log_conf();
-    conf.date = false;
+    LogConfig conf = init_log_conf(date: false);
 
     Logger log;
     log.init_conf(&alloc, conf);
