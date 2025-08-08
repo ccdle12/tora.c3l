@@ -16,24 +16,10 @@ struct Logger
 
  @return  `A Logger with default LogConfig and initialized with tmem`
 *>
-fn Logger temp()
+fn Logger temp(OutStream out=io::stdout())
 {
    Logger log;
-   log.tinit();
-
-   return log;
-}
-
-<*
- Quick tmem initialization of logger with conf.
-
- @param conf
- @return  `A Logger with a custom LogConfig`
-*>
-fn Logger temp_with_conf(LogConfig conf)
-{
-   Logger log;
-   log.tinit_with_conf(conf);
+   log.tinit(out);
 
    return log;
 }
@@ -45,22 +31,9 @@ fn Logger temp_with_conf(LogConfig conf)
  @param [&inout] allocator
  @return  `A Logger with default config and specific Allocator`
 *>
-fn Logger* Logger.init(&self, Allocator allocator)
+fn Logger* Logger.init(&self, Allocator allocator, OutStream out=io::stdout())
 {
-    *self = { .allocator = allocator, .config = init_log_conf() };
-    return self;
-}
-
-<*
- Init the Logger with an Allocator and custom LogConfig.
-
- @param [&inout] allocator
- @param config
- @return  `A Logger with a custom LogConfig and specific Allocator`
-*>
-fn Logger* Logger.init_conf(&self, Allocator allocator, LogConfig config)
-{
-    *self = { .allocator = allocator, .config = config };
+    *self = { .allocator = allocator, .config = init_log_conf(out:out) };
     return self;
 }
 
@@ -70,16 +43,7 @@ fn Logger* Logger.init_conf(&self, Allocator allocator, LogConfig config)
  @param [in] self
  @return  `A Logger with default LogConfig and initialized with tmem`
 *>
-fn Logger* Logger.tinit(&self) => self.init(tmem) @inline;
-
-<*
- Init the Logger with tmem and a custom LogConfig.
-
- @param [in] self
- @param config
- @return  `A Logger with a custom LogConfig with tmem as the Allocator.`
-*>
-fn Logger* Logger.tinit_with_conf(&self, LogConfig config) => self.init_conf(tmem, config) @inline;
+fn Logger* Logger.tinit(&self, OutStream out) => self.init(tmem, out) @inline;
 
 <*
  The default info level logging.
