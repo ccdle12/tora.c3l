@@ -16,24 +16,10 @@ struct Logger
 
  @return  `A Logger with default LogConfig and initialized with tmem`
 *>
-fn Logger temp()
+fn Logger temp(LogConfig config=init_log_conf())
 {
    Logger log;
-   log.tinit();
-
-   return log;
-}
-
-<*
- Quick tmem initialization of logger with conf.
-
- @param conf
- @return  `A Logger with a custom LogConfig`
-*>
-fn Logger temp_with_conf(LogConfig conf)
-{
-   Logger log;
-   log.tinit_with_conf(conf);
+   log.tinit(config);
 
    return log;
 }
@@ -45,20 +31,7 @@ fn Logger temp_with_conf(LogConfig conf)
  @param [&inout] allocator
  @return  `A Logger with default config and specific Allocator`
 *>
-fn Logger* Logger.init(&self, Allocator allocator)
-{
-    *self = { .allocator = allocator, .config = init_log_conf() };
-    return self;
-}
-
-<*
- Init the Logger with an Allocator and custom LogConfig.
-
- @param [&inout] allocator
- @param config
- @return  `A Logger with a custom LogConfig and specific Allocator`
-*>
-fn Logger* Logger.init_conf(&self, Allocator allocator, LogConfig config)
+fn Logger* Logger.init(&self, Allocator allocator, LogConfig config=init_log_conf())
 {
     *self = { .allocator = allocator, .config = config };
     return self;
@@ -70,16 +43,7 @@ fn Logger* Logger.init_conf(&self, Allocator allocator, LogConfig config)
  @param [in] self
  @return  `A Logger with default LogConfig and initialized with tmem`
 *>
-fn Logger* Logger.tinit(&self) => self.init(tmem) @inline;
-
-<*
- Init the Logger with tmem and a custom LogConfig.
-
- @param [in] self
- @param config
- @return  `A Logger with a custom LogConfig with tmem as the Allocator.`
-*>
-fn Logger* Logger.tinit_with_conf(&self, LogConfig config) => self.init_conf(tmem, config) @inline;
+fn Logger* Logger.tinit(&self, LogConfig config=init_log_conf()) => self.init(tmem, config) @inline;
 
 <*
  The default info level logging.
@@ -92,7 +56,6 @@ fn void? Logger.info(&self, String msg, args..., String file=$$FILE, isz line_nu
 <*
  Internal log function implementation.
 
- @param [in] self
  @param      lvl: `The log level for the logging output.`
  @param [in] msg: `The input message for logging.`
  @param      file: `The file name of the caller.`
@@ -119,7 +82,7 @@ fn DString? Logger.fmt_output(&self, LogLevel* lvl, String msg, String file, isz
     DString output;
     output.init(self.allocator, 1024);
 
-    output.appendf("%s", get_level_color(lvl));
+    output.appendf("%s", lvl.color);
 
     if (self.config.date) {
         self.fmt_date(output)!;
@@ -138,6 +101,11 @@ fn DString? Logger.fmt_output(&self, LogLevel* lvl, String msg, String file, isz
     return output;
 }
 
+fn void? Logger.fmt_date(&self, DString output) @private
+{
+    output.appendf("[%s %s] ", $$DATE, $$TIME);
+}
+
 <*
  Formats the log level.
 
@@ -148,11 +116,6 @@ fn DString? Logger.fmt_output(&self, LogLevel* lvl, String msg, String file, isz
 fn void? Logger.fmt_log_lvl(&self, DString output, LogLevel* lvl) @private
 {
     output.appendf("[%s] ", lvl.name)!;
-}
-
-fn void? Logger.fmt_date(&self, DString output) @private
-{
-    output.appendf("[%s %s] ", $$DATE, $$TIME);
 }
 
 <*
