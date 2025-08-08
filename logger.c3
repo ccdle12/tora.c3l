@@ -56,7 +56,6 @@ fn void? Logger.info(&self, String msg, args..., String file=$$FILE, isz line_nu
 <*
  Internal log function implementation.
 
- @param [in] self
  @param      lvl: `The log level for the logging output.`
  @param [in] msg: `The input message for logging.`
  @param      file: `The file name of the caller.`
@@ -64,68 +63,9 @@ fn void? Logger.info(&self, String msg, args..., String file=$$FILE, isz line_nu
 *>
 fn void? Logger.log(&self, LogLevel lvl, String msg, String file, isz line_num) @private
 {
-    DString output = self.fmt_output(&lvl, msg, file, line_num)!;
+    DString output = fmt_output(self.allocator, &self.config, &lvl, msg, file, line_num)!;
     defer output.free();
 
     self.config.out.write(output.str_view())!;
     if (&self.config.out.flush) self.config.out.flush()!;
-}
-
-<*
- Formats the main output for the logger.
-
- @param [in] self
- @param [&in] lvl: `The log level for the logging output.`
- @param [in] msg: `The input message for logging.`
-*>
-fn DString? Logger.fmt_output(&self, LogLevel* lvl, String msg, String file, isz line_num) @private
-{
-    DString output;
-    output.init(self.allocator, 1024);
-
-    output.appendf("%s", get_level_color(lvl));
-
-    if (self.config.date) {
-        self.fmt_date(output)!;
-    }
-
-    self.fmt_log_lvl(output, lvl)!;
-
-    if (self.config.path) {
-        self.fmt_path(output, file, line_num)!;
-    }
-
-    output.appendf("- ")!;
-    output.appendf("%s\n", msg)!;
-
-    output.appendf("%s", COLOR_RESET);
-    return output;
-}
-
-<*
- Formats the log level.
-
- @param [in] self
- @param [&out] output: `The output buffer for writing log level.`
- @param [&in] lvl: `The log level.`
-*>
-fn void? Logger.fmt_log_lvl(&self, DString output, LogLevel* lvl) @private
-{
-    output.appendf("[%s] ", lvl.name)!;
-}
-
-fn void? Logger.fmt_date(&self, DString output) @private
-{
-    output.appendf("[%s %s] ", $$DATE, $$TIME);
-}
-
-<*
- Formats the path for the logging output.
-
- @param [in] self
- @param [&out] output: `The output buffer for writing log level.`
-*>
-fn void? Logger.fmt_path(&self, DString output, String file, isz line_num) @private
-{
-    output.appendf("[%s:%s] ", file, line_num)!;
 }
