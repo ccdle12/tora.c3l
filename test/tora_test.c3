@@ -24,13 +24,12 @@ fn void test_simple_formatting() @test
 fn void test_expected_formatting() @test
 {
     DString out = dstring::temp();
-    Logger log = temp(out: &out);
+    Logger log = temp(config: init_log_conf(out: &out));
 
     log.info("foo: %d, %s", 5, "bar")!!;
     String expected = @sprintf("[INFO] [tora_test.c3:%s] - foo: 5, bar", $$LINE-1);
 
-    String result = strip_log_output(out.str_view());
-    test::@check(result.contains(expected));
+    test::@check(out.str_view().contains(expected));
 }
 
 fn void test_different_allocator() @test
@@ -39,13 +38,12 @@ fn void test_different_allocator() @test
     DString out = dstring::temp();
 
     Logger log;
-    log.init(&alloc, out: &out);
+    log.init(&alloc, config: init_log_conf(out: &out));
 
     log.info("foo")!!;
     String expected = @sprintf("[INFO] [tora_test.c3:%s] - foo", $$LINE-1);
 
-    String result = strip_log_output(out.str_view());
-    test::@check(result.contains(expected));
+    test::@check(out.str_view().contains(expected));
 }
 
 // NOTE: Kind of a hacky test, File implements flush(), so I'm forcing that

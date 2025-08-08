@@ -1,30 +1,16 @@
 module tora;
 
 const String COLOR_RESET = "\u001B[0m";
-const String COLOR_ERROR = "\u001B[31m";
-const String COLOR_INFO  = "\u001B[94m";
 
+// TODO: Update colors for TRACE, DEBUG, WARN.
 <*
  The LogLevels available for logging.
 *>
-enum LogLevel : int (String name)
+enum LogLevel : uint (String name, String color)
 {
-    TRACE = "TRACE",
-    DEBUG = "DEBUG",
-    INFO  = "INFO",
-    WARN  = "WARN",
-    ERROR = "ERROR",
-}
-
-fn String get_level_color(LogLevel* lvl)
-{
-    switch (*lvl)
-    {
-        case LogLevel.ERROR:
-            return COLOR_ERROR;
-        case LogLevel.INFO:
-            return COLOR_INFO;
-        default:
-            return COLOR_RESET;
-    }
+    TRACE = {"TRACE", "\u001B[94m"},
+    DEBUG = {"DEBUG", "\u001B[94m"},
+    INFO  = {"INFO", "\u001B[94m"},
+    WARN  = {"WARN", "\u001B[31m"},
+    ERROR = {"ERROR", "\u001B[31m"}
 }

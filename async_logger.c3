@@ -32,14 +32,13 @@ struct BufMsg
  @require allocator != null
 
  @param [&inout] allocator
- @param [&out]   out: `A pointer to the underlying type implementing OutStream.`
 *>
-fn AsyncLogger*? AsyncLogger.init(&self, Allocator allocator, OutStream out)
+fn AsyncLogger*? AsyncLogger.init(&self, Allocator allocator, LogConfig conf)
 {
     *self = { .allocator = allocator };
 
     self.chan.init(self.allocator)!;
-    self.logger.init(self.allocator, out);
+    self.logger.init(self.allocator, conf);
     self.thread.create((ThreadFn) &worker_thread, self)!;
     self.initialized = true;
 
