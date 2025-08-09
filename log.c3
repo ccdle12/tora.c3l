@@ -16,9 +16,9 @@ fn void error(String msg, args..., String file=$$FILE, isz line_num=$$LINE) => l
 
 fn void log_print(String msg, LogLevel lvl, String file, isz line_num)
 {
-    if (lvl.name == "ERROR") {
-        io::eprintfn(FORMAT_STR, lvl.color, $$DATE, $$TIME, lvl.name, file, line_num, msg, COLOR_RESET);
+    if (lvl.str == "ERROR") {
+        io::eprintfn(FORMAT_STR, lvl.color, $$DATE, $$TIME, lvl.str, file, line_num, msg, COLOR_RESET);
     } else {
-        io::printfn(FORMAT_STR, lvl.color, $$DATE, $$TIME, lvl.name, file, line_num, msg, COLOR_RESET);
+        io::printfn(FORMAT_STR, lvl.color, $$DATE, $$TIME, lvl.str, file, line_num, msg, COLOR_RESET);
     }
 }

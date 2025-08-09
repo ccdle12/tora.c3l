@@ -92,7 +92,7 @@ fn DString? Logger.fmt_output(&self, LogLevel* lvl, String msg, String file, isz
         output.appendf("[%s %s] ", $$DATE, $$TIME)!;
     }
 
-    output.appendf("[%s] ", lvl.name)!;
+    output.appendf("[%s] ", lvl.str)!;
 
     if (self.config.path) {
         output.appendf("[%s:%s] ", file, line_num)!;
