@@ -24,7 +24,7 @@ fn void test_simple_formatting() @test
 fn void test_expected_formatting() @test
 {
     DString out = dstring::temp();
-    Logger log = temp(config: init_log_conf(out: &out));
+    Logger log = temp(out: &out);
 
     log.info("foo: %d, %s", 5, "bar")!!;
     String expected = @sprintf("[INFO] [tora_test.c3:%s] - foo: 5, bar", $$LINE-1);
@@ -38,7 +38,7 @@ fn void test_different_allocator() @test
     DString out = dstring::temp();
 
     Logger log;
-    log.init(&alloc, config: init_log_conf(out: &out));
+    log.init(&alloc, out: &out);
 
     log.info("foo")!!;
     String expected = @sprintf("[INFO] [tora_test.c3:%s] - foo", $$LINE-1);

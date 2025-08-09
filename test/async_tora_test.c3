@@ -10,7 +10,7 @@ fn void test_async_logger() @test
     DString out = dstring::temp();
 
     AsyncLogger alog;
-    alog.init(allocator::heap(), init_log_conf(out: &out))!!;
+    alog.init(allocator::heap(), out: &out)!!;
     defer alog.free()!!;
 
     String msg = "foo";

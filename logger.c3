@@ -14,13 +14,12 @@ struct Logger
 <*
  Quick tmem initialization of logger.
 
- @param config: `A default LogConfig.`
  @return  `A Logger with default LogConfig and initialized with tmem`
 *>
-fn Logger temp(LogConfig config=init_log_conf())
+fn Logger temp(bool date=true, bool path=true, OutStream out=io::stdout())
 {
    Logger log;
-   log.tinit(config);
+   log.tinit(date, path, out);
 
    return log;
 }
@@ -32,8 +31,10 @@ fn Logger temp(LogConfig config=init_log_conf())
  @param [&inout] allocator
  @return  `A Logger with default config and a specific Allocator`
 *>
-fn Logger* Logger.init(&self, Allocator allocator, LogConfig config=init_log_conf())
+fn Logger* Logger.init(&self, Allocator allocator, bool date=true, bool path=true, OutStream out=io::stdout())
 {
+
+    LogConfig config = init_log_conf(date, path, out);
     *self = { .allocator = allocator, .config = config };
     return self;
 }
@@ -44,7 +45,7 @@ fn Logger* Logger.init(&self, Allocator allocator, LogConfig config=init_log_con
  @param [in] self
  @return  `A Logger with default LogConfig and initialized with tmem`
 *>
-fn Logger* Logger.tinit(&self, LogConfig config=init_log_conf()) => self.init(tmem, config) @inline;
+fn Logger* Logger.tinit(&self, bool date=true, bool path=true, OutStream out=io::stdout()) => self.init(tmem, date, path, out) @inline;
 
 fn void? Logger.trace(&self, String msg, args..., String file=$$FILE, isz line_num=$$LINE) => self.log(LogLevel.TRACE, string::tformat(msg, ...args), file, line_num) @inline;
 fn void? Logger.debug(&self, String msg, args..., String file=$$FILE, isz line_num=$$LINE) => self.log(LogLevel.DEBUG, string::tformat(msg, ...args), file, line_num) @inline;
