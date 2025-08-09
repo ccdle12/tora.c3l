@@ -1,4 +1,6 @@
-Welcome to the tora logging library.
+# Tora Logging Library
+
+- Built on version: `C3 Compiler Version:       0.7.4 (Pre-release, Jan  1 1980 00:00:00)`
 
 ## Quick Use
 
