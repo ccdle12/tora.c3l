@@ -1,8 +1,6 @@
 Welcome to the tora logging library.
 
-## Example
-
-### Quick Use
+## Quick Use
 
 ```c
 import tora;
@@ -24,46 +22,46 @@ fn void main()
 
 ```
 
-### Logging with Configuration
+## Logging with Configuration
 
 If you would like more control and configuration on the output format and logging
-destination, use the `Logger` struct and `LogConfig`.
+destination, use the `Logger` struct.
 
-Omitting assignment to `OutStream out` in the `LogConfig` defaults to `stdout`.
+The current three configurable parameters are:
 
-```c
-import tora;
-import std::io;
-
-fn void main()
-{
-    tora::Logger log;
-    log.init(allocator::heap(), tora::init_log_conf(path: false));
-    log.info("Hello, World!")!!;
-}
-
->>> [2025-08-08 16:33:19] [INFO] - Hello, World!
-```
+- `bool date`: To show the date and time on logs
+- `bool file`: To show the file and line of where the log is called
+- `OutStream out`: To redirect the output to any implementation of OutStream (defaults to stdout and stderr for ERROR level).
 
 ```c
 import tora;
 import std::io;
 
+const MSG = "Hello, World!";
+
 fn void main()
 {
-    DString output = dstring::temp();
-    LogConfig conf = tora::init_log_conf(date: false, out: &out);
+    DString out = dstring::temp();
 
-    tora::Logger log = tora::temp(conf);
-    log.info("Hello, World!")!!;
+    tora::Logger log = tora::temp(date:false, out: &out);
+    log.trace("Logger: %s", MSG)!!;
+    log.debug("Logger: %s", MSG)!!;
+    log.info("Logger: %s", MSG)!!;
+    log.warn("Logger: %s", MSG)!!;
+    log.error("Logger: %s", MSG)!!;
 
-    io::printfn(output.str_view());
+    io::printfn(out.str_view());
+
 }
 
->>> [INFO] [main.c3:11] - Hello, World!
+>>> [TRACE] [example.c3:31] - Logger: Hello, World!
+>>> [DEBUG] [example.c3:32] - Logger: Hello, World!
+>>> [INFO] [example.c3:33] - Logger: Hello, World!
+>>> [WARN] [example.c3:34] - Logger: Hello, World!
+>>> [ERROR] [example.c3:35] - Logger: Hello, World!
 ```
 
-### Async Logger
+## Async Logger
 
 A simple Async Logger that creates a background thread to handle writing to the
 output.
@@ -78,17 +76,31 @@ fn void main()
     DString out = dstring::temp();
 
     AsyncLogger log;
-    log.init(allocator::heap(), tora::init_log_conf(out=&out))!!;
+    log.init(allocator::heap(), out: &out)!!;
     defer log.free()!!;
 
-    log.info("Hello, World!")!!;
+    log.trace("AsyncLogger: %s", MSG)!!;
+    log.debug("AsyncLogger: %s", MSG)!!;
+    log.info("AsyncLogger: %s", MSG)!!;
+    log.warn("AsyncLogger: %s", MSG)!!;
+    log.error("AsyncLogger: %s", MSG)!!;
 
     thread::sleep_ms(50);
 
     io::printfn("%s", out);
 }
 
->>> [2025-08-07 20:55:56] [INFO] [main.c3:13] - Hello, World!
+>>> [2025-08-09 10:05:58] [TRACE] [example.c3:48] - AsyncLogger: Hello, World!
+>>> [2025-08-09 10:05:58] [DEBUG] [example.c3:49] - AsyncLogger: Hello, World!
+>>> [2025-08-09 10:05:58] [INFO] [example.c3:50] - AsyncLogger: Hello, World!
+>>> [2025-08-09 10:05:58] [WARN] [example.c3:51] - AsyncLogger: Hello, World!
+>>> [2025-08-09 10:05:58] [ERROR] [example.c3:52] - AsyncLogger: Hello, World!
+```
+
+## Run the example
+
+```sh
+c3c run
 ```
 
 ## Installation
