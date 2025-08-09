@@ -9,11 +9,19 @@ import tora;
 
 fn void main()
 {
-    String hello = "Hello, World!";
-    tora::info("%s", hello)!!;
+    tora::trace("hello");
+    tora::debug("hello");
+    tora::info("hello");
+    tora::warn("hello");
+    tora::error("hello");
 }
 
->>> [2025-08-07 15:10:34] [INFO] [main.c3:8] - Hello, World!
+>>> [2025-08-08 18:23:48] [TRACE] [main.c3:5] - hello
+>>> [2025-08-08 18:23:48] [DEBUG] [main.c3:6] - hello
+>>> [2025-08-08 18:23:48] [INFO] [main.c3:7] - hello
+>>> [2025-08-08 18:23:48] [WARN] [main.c3:8] - hello
+>>> [2025-08-08 18:23:48] [ERROR] [main.c3:9] - hello
+
 ```
 
 ### Logging with Configuration
