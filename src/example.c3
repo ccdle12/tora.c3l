@@ -12,9 +12,9 @@ fn void main()
 
 fn void log_example()
 {
-    tora::trace("hello");
-    tora::debug("hello");
-    tora::info("hello");
-    tora::warn("hello");
-    tora::error("hello");
+    tora::trace("%s", MSG);
+    tora::debug("%s", MSG);
+    tora::info("%s", MSG);
+    tora::warn("%s", MSG);
+    tora::error("%s", MSG);
 }
